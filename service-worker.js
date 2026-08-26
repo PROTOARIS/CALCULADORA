@@ -1,4 +1,4 @@
-const CACHE_NAME = 'calc-aduanera-v1';
+const CACHE_NAME = 'calc-aduanera-v2';
 const ASSETS = [
   './index.html',
   './manifest.json',
