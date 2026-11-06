@@ -253,6 +253,31 @@
   .reg-empty{padding:30px;text-align:center;color:var(--slate);font-family:'IBM Plex Sans',sans-serif;}
   .reg-del{background:none;border:none;color:#B0392B;cursor:pointer;font-size:14px;}
   .reg-table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:4px;}
+  .tabbar{overflow-x:auto;}
+  .tab-btn{white-space:nowrap;}
+  .tf-grid{max-width:1180px;margin:0 auto;padding:28px 32px 20px;display:grid;grid-template-columns:1fr 1.15fr;gap:28px;align-items:start;border-top:1px solid var(--line);background:var(--white);}
+  @media(max-width:880px){.tf-grid{grid-template-columns:1fr;padding:20px 18px 20px;}}
+  .tf-card{background:var(--white);border:1px solid var(--line);border-radius:4px;padding:24px 26px;}
+  .tf-src{background:var(--paper);border:1px solid var(--line);border-radius:3px;padding:10px 12px;font-size:12.5px;color:var(--slate);margin-bottom:16px;line-height:1.5;}
+  .tf-src b{color:var(--navy);font-family:'IBM Plex Mono',monospace;}
+  table.tf-lines{width:100%;border-collapse:collapse;font-size:13px;}
+  table.tf-lines th{text-align:left;font-size:11px;letter-spacing:.5px;text-transform:uppercase;color:var(--slate);border-bottom:2px solid var(--line);padding:6px 6px;}
+  table.tf-lines td{padding:8px 6px;border-bottom:1px dashed var(--line);vertical-align:top;}
+  table.tf-lines td.num, table.tf-lines th.num{text-align:right;font-family:'IBM Plex Mono',monospace;white-space:nowrap;}
+  table.tf-lines td small{display:block;color:#8B93A0;font-size:11px;}
+  .tf-sum{margin-top:16px;background:var(--paper-2);border-radius:3px;padding:14px 16px;font-family:'IBM Plex Mono',monospace;font-size:13px;}
+  .tf-sum .r{display:flex;justify-content:space-between;padding:3px 0;}
+  .tf-sum .r.big{border-top:1px solid var(--line);margin-top:6px;padding-top:9px;font-size:16px;font-weight:600;color:var(--navy);}
+  .tf-notes{margin:14px 0 0;padding-left:18px;font-size:11.5px;color:var(--slate);line-height:1.55;}
+  .tf-ref{max-width:1180px;margin:0 auto;padding:10px 32px 60px;background:var(--white);}
+  @media(max-width:880px){.tf-ref{padding:10px 18px 48px;}}
+  .tf-ref details{border:1px solid var(--line);border-radius:4px;margin-bottom:10px;background:var(--paper);}
+  .tf-ref summary{cursor:pointer;padding:12px 16px;font-weight:600;color:var(--navy);font-size:14px;}
+  .tf-ref table{width:calc(100% - 32px);margin:0 16px 14px;border-collapse:collapse;font-size:12.5px;}
+  .tf-ref td{padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top;}
+  .tf-ref td:first-child{width:46%;color:var(--ink);}
+  .tf-ref td:last-child{font-family:'IBM Plex Mono',monospace;color:var(--navy);}
+  .tf-ref tr.sec td{background:var(--paper-2);font-weight:600;font-family:'IBM Plex Sans',sans-serif;color:var(--amber-dark);}
 </style>
 </head>
 <body>
@@ -345,9 +370,108 @@
   <button class="tab-btn" data-tab="land">Terrestre</button>
   <button class="tab-btn" data-tab="multi">Multimodal</button>
   <button class="tab-btn" data-tab="items">Multi-ítem (prorrateo)</button>
+  <button class="tab-btn" data-tab="tarifario">Tarifario (recintos)</button>
 </div>
 
 <div id="tabsRoot"></div>
+
+<div class="tab-panel" id="panel_tarifario">
+  <div class="tf-grid">
+    <div class="tf-card">
+      <p class="eyebrow">Tarifario de servicios en recintos aduaneros</p>
+      <h2 class="section-title">Datos del servicio</h2>
+      <div class="field">
+        <label for="tf_fuente">Tomar el valor CIF y los tributos de</label>
+        <div class="input-row"><select id="tf_fuente">
+          <option value="air">Pestaña Aéreo</option><option value="land">Pestaña Terrestre</option>
+          <option value="multi">Pestaña Multimodal</option><option value="items">Pestaña Multi-ítem (prorrateo)</option>
+          <option value="manual">Ingresar CIF manualmente</option></select></div>
+      </div>
+      <div class="field" id="tf_manual_wrap" style="display:none;">
+        <label for="tf_cif_manual">Valor CIF (Bs)</label>
+        <div class="input-row"><span class="prefix">Bs</span><input type="number" id="tf_cif_manual" value="0" min="0" step="0.01"></div>
+      </div>
+      <div class="tf-src" id="tf_src"></div>
+      <div class="field">
+        <label for="tf_recinto">Recinto aduanero</label>
+        <div class="input-row"><select id="tf_recinto">
+          <option value="interior">Aduana de Interior</option><option value="frontera">Aduana de Frontera</option>
+          <option value="aeropuerto">Aeropuerto</option><option value="fluvial">Puerto Fluvial</option></select></div>
+      </div>
+      <div class="field">
+        <label for="tf_trat">Tratamiento del Servicio Logístico</label>
+        <div class="input-row"><select id="tf_trat"></select></div>
+      </div>
+      <div class="field">
+        <label for="tf_merc">Tipo de mercancía / carga</label>
+        <div class="input-row"><select id="tf_merc"></select></div>
+      </div>
+      <div class="field" id="tf_cant_wrap">
+        <label for="tf_cant">Cantidad de contenedores o vehículos</label>
+        <div class="input-row"><input type="number" id="tf_cant" value="1" min="1" step="1"></div>
+      </div>
+      <div class="field">
+        <label for="tf_peso">Peso total de la mercancía (Kg)</label>
+        <div class="input-row"><span class="prefix">Kg</span><input type="number" id="tf_peso" value="1000" min="0" step="0.01"></div>
+        <div class="hint">Con la pestaña Multi-ítem se llena sola con el peso total de la tabla.</div>
+      </div>
+      <div class="field">
+        <label for="tf_modo">Días de permanencia en el recinto</label>
+        <div class="input-row"><select id="tf_modo">
+          <option value="dias">Ya tengo los días (ingresarlos)</option>
+          <option value="fechas">Calcular con fechas</option></select></div>
+      </div>
+      <div id="tf_dias_wrap" class="field">
+        <div class="input-row"><span class="prefix">Días</span><input type="number" id="tf_dias" value="10" min="0" step="1"></div>
+        <div class="hint">Los primeros 5 días de mercancía general y peligrosa son libres; la primera quincena se cobra desde el sexto día.</div>
+      </div>
+      <div id="tf_fechas_wrap" style="display:none;">
+        <div class="field">
+          <label for="tf_parte">Opción 1 — Fecha de arribo (Parte de Recepción de Mercancías)</label>
+          <div class="input-row"><input type="date" id="tf_parte"></div>
+        </div>
+        <div class="field">
+          <label for="tf_parte_h">Hora de arribo (opcional, no cambia el conteo de días)</label>
+          <div class="input-row"><input type="time" id="tf_parte_h"></div>
+        </div>
+        <div class="field">
+          <label for="tf_dim">Opción 2 — Fecha de aceptación de la DIM</label>
+          <div class="input-row"><input type="date" id="tf_dim"></div>
+        </div>
+        <div class="field">
+          <label style="display:flex;gap:8px;align-items:center;cursor:pointer;"><input type="checkbox" id="tf_incl" checked> Contar el día de arribo como día 1</label>
+        </div>
+        <div class="tf-src" id="tf_dias_calc"></div>
+      </div>
+      </div>
+      <div class="field">
+        <label for="tf_caso">Caso especial</label>
+        <div class="input-row"><select id="tf_caso">
+          <option value="ninguno">Ninguno (tarifa normal)</option>
+          <option value="transbordo">Transbordo (reemplaza el Servicio Logístico)</option>
+          <option value="deptrans">Régimen de Depósito Transitorio (reemplaza el Servicio Logístico)</option>
+          <option value="donacion">Mercancías de donación (64% de las tarifas)</option>
+          <option value="nosujeta">Valijas diplomáticas / envío de socorro (no sujeta a cobro)</option></select></div>
+      </div>
+      <div class="field" id="tf_fluv_wrap" style="display:none;">
+        <label for="tf_fluv">Fluvial — Bs por tonelada del Servicio Logístico (tratamiento general)</label>
+        <div class="input-row"><span class="prefix">Bs/ton</span><input type="number" id="tf_fluv" value="11" min="0" step="0.01"></div>
+        <div class="hint">El documento escaneado dice 11; el tratamiento especial dice 1,00. Verifica con la versión oficial.</div>
+      </div>
+      <div class="field">
+        <label style="display:flex;gap:8px;align-items:center;cursor:pointer;"><input type="checkbox" id="tf_poliza"> El cliente presenta póliza de seguro al ingreso (no se cobra el Seguro de Almacenamiento)</label>
+      </div>
+    </div>
+    <div class="tf-card">
+      <p class="eyebrow">Servicios en recinto aduanero</p>
+      <h2 class="section-title" id="tf_title">Liquidación de servicios</h2>
+      <div style="overflow-x:auto;"><table class="tf-lines"><thead><tr><th>Concepto</th><th>Tarifa</th><th class="num">Monto (Bs)</th></tr></thead><tbody id="tf_lines"></tbody></table></div>
+      <div class="tf-sum" id="tf_sum"></div>
+      <ul class="tf-notes" id="tf_notes"></ul>
+    </div>
+  </div>
+  <div class="tf-ref" id="tf_ref"></div>
+</div>
 
 <div class="tab-panel" id="panel_items">
   <div class="items-wrap">
@@ -1087,7 +1211,7 @@
 
     ITEMS_RESULT = {
       cliente: $('cliente').value.trim(), ref: $('ref').value.trim(),
-      count: itemsData.length, fob: totals.fob, cifusd: totals.cifusd, cifbs: totals.cifbs,
+      count: itemsData.length, peso: totals.peso, fob: totals.fob, cifusd: totals.cifusd, cifbs: totals.cifbs,
       ga: totals.ga, ice: totals.ice, base: totals.base, iva: totals.iva,
       usoSist, total: totals.total, grandTotal
     };
@@ -1362,6 +1486,266 @@
     }));
     flashSave('it_saveRegBtn', 'it_saveFlash');
   });
+
+  /* ---- Pestaña Tarifario de recintos aduaneros (RD 01-042-22) ---- */
+  const TF = {
+    interior:  {label:'Aduana de Interior',  logGen:0.52, logEsp:0.49, bsTonEsp:0, almGen:8.35,  almPel:10.44, byKg:false, c20:[48.72,62.64,69.60],  c40:[90.48,118.32,139.20],  gran:0.35, veh:[41.76,48.72,55.68,125.28,139.20],  seg:0.08, transb:27.84, depTrans:32,  verde:true},
+    frontera:  {label:'Aduana de Frontera',  logGen:0.52, logEsp:0.49, bsTonEsp:0, almGen:12.53, almPel:13.92, byKg:false, c20:[55.68,69.60,76.56],  c40:[97.44,125.28,146.16],  gran:0.42, veh:[48.72,55.68,62.64,132.24,146.16], seg:0.08, transb:27.84, depTrans:32,  verde:true},
+    aeropuerto:{label:'Aeropuerto',          logGen:0.52, logEsp:0.49, bsTonEsp:0, almGen:0.63,  almPel:10.44, byKg:true,  c20:[48.72,62.64,69.60],  c40:null,                   gran:null, veh:null,                              seg:0.10, transb:27.84, depTrans:32,  verde:false},
+    fluvial:   {label:'Puerto Fluvial',      logGen:0.49, logEsp:0.49, bsTonEsp:1, almGen:16.50, almPel:19.00, byKg:false, c20:[64,80,88],           c40:[112,145,169],          gran:0.48, veh:[56,64,72,153,169],                 seg:0.08, transb:32.00, depTrans:120, verde:true}
+  };
+  const TF_TRAT = {general:'Tratamiento general', verde:'Despacho en canal verde', pub:'Instituciones Públicas', oea:'Operador Económico Autorizado (OEA)', prios:'Principales Operadores de Comercio Exterior (PRIOS)'};
+  const TF_MERC = {general:'Mercancía general', peligrosa:'Mercancía peligrosa', c20:"Contenedor nacionalizado de 20 pies", c40:"Contenedor nacionalizado de 40 pies", graneles:'Gráneles líquidos y sólidos', vehiculos:'Vehículos'};
+  const tfN2 = n => n.toLocaleString('es-BO',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const tfBs = n => roundCents(n).toLocaleString('es-BO',{minimumFractionDigits:2,maximumFractionDigits:2});
+  let tfLastRecinto = null, tfPesoTouched = false, tfLastCalcTab = 'air';
+
+  function tfFillSelect(sel, keys, labels){
+    const prev = sel.value;
+    sel.innerHTML = keys.map(k=>'<option value="'+k+'">'+labels[k]+'</option>').join('');
+    if(keys.indexOf(prev) >= 0) sel.value = prev;
+  }
+  function tfSyncOptions(){
+    const rk = $('tf_recinto').value, R = TF[rk];
+    if(rk === tfLastRecinto) return;
+    tfLastRecinto = rk;
+    tfFillSelect($('tf_trat'), R.verde ? ['general','verde','pub','oea','prios'] : ['general','pub','oea','prios'], TF_TRAT);
+    const mk = ['general','peligrosa','c20'];
+    if(R.c40) mk.push('c40');
+    if(R.gran !== null) mk.push('graneles');
+    if(R.veh) mk.push('vehiculos');
+    tfFillSelect($('tf_merc'), mk, TF_MERC);
+    $('tf_fluv_wrap').style.display = rk === 'fluvial' ? 'block' : 'none';
+  }
+
+  function tfCalc(){
+    if(!$('tf_recinto')) return;
+    tfSyncOptions();
+    const rk = $('tf_recinto').value, R = TF[rk];
+    const src = $('tf_fuente').value;
+    $('tf_manual_wrap').style.display = src === 'manual' ? 'block' : 'none';
+
+    let cifBs = 0, cifUsd = 0, trib = 0, srcLabel = 'Ingreso manual', hasData = true;
+    if(src === 'manual'){
+      cifBs = parseFloat($('tf_cif_manual').value) || 0;
+    } else if(src === 'items'){
+      srcLabel = 'Multi-ítem (prorrateo)';
+      if(ITEMS_RESULT){ cifBs = ITEMS_RESULT.cifbs; cifUsd = ITEMS_RESULT.cifusd; trib = ITEMS_RESULT.grandTotal;
+        if(!tfPesoTouched && ITEMS_RESULT.peso > 0) $('tf_peso').value = ITEMS_RESULT.peso; }
+      else hasData = false;
+    } else {
+      const r = TAB_RESULTS[src];
+      srcLabel = (TABS.find(t=>t.key===src)||{}).label || src;
+      if(r){ cifBs = r.cifBs; cifUsd = r.cifUsd; trib = r.totalTributo; } else hasData = false;
+    }
+    $('tf_src').innerHTML = src === 'manual'
+      ? 'Valor CIF ingresado a mano: <b>Bs ' + tfBs(cifBs) + '</b>'
+      : 'Datos tomados de <b>' + srcLabel + '</b>: CIF <b>$us ' + tfN2(roundCents(cifUsd)) + '</b> · <b>Bs ' + tfBs(cifBs) + '</b> · Total tributos <b>Bs ' + tfBs(trib) + '</b>';
+
+    const modo = $('tf_modo').value;
+    $('tf_dias_wrap').style.display = modo === 'dias' ? 'block' : 'none';
+    $('tf_fechas_wrap').style.display = modo === 'fechas' ? 'block' : 'none';
+    let dias = 0, avisoFechas = '', incompleto = false;
+    if(modo === 'dias'){
+      dias = Math.max(0, Math.floor(parseFloat($('tf_dias').value) || 0));
+    } else {
+      const pv = $('tf_parte').value, dv = $('tf_dim').value;
+      if(!pv || !dv){
+        incompleto = true;
+        $('tf_dias_calc').innerHTML = 'Completa la fecha de arribo y la fecha de aceptación de la DIM para calcular los días.';
+      } else {
+        const d1 = Date.UTC(+pv.slice(0,4), +pv.slice(5,7)-1, +pv.slice(8,10));
+        const d2 = Date.UTC(+dv.slice(0,4), +dv.slice(5,7)-1, +dv.slice(8,10));
+        const diff = Math.round((d2 - d1) / 86400000);
+        if(diff < 0){ dias = 0; avisoFechas = 'La fecha de aceptación de la DIM es anterior al arribo: revisa las fechas.'; }
+        else dias = diff + ($('tf_incl').checked ? 1 : 0);
+        $('tf_dias_calc').innerHTML = 'Permanencia calculada: <b>' + dias + ' día(s)</b>' + (avisoFechas ? '<br>' + avisoFechas : '');
+      }
+    }
+    const kg = parseFloat($('tf_peso').value) || 0, ton = kg / 1000;
+    const cant = Math.max(1, Math.floor(parseFloat($('tf_cant').value) || 1));
+    const trat = $('tf_trat').value, merc = $('tf_merc').value, caso = $('tf_caso').value;
+    $('tf_cant_wrap').style.display = (merc === 'c20' || merc === 'c40' || merc === 'vehiculos') ? 'block' : 'none';
+    const lines = [];
+
+    // 1. Servicio logístico
+    if(caso === 'transbordo'){
+      lines.push({c:'Transbordo (Servicio Logístico)', d:tfN2(ton)+' ton', t:tfN2(R.transb)+' Bs/ton', m:R.transb*ton});
+    } else if(caso === 'deptrans'){
+      lines.push({c:'Régimen de Depósito Transitorio (Servicio Logístico)', d:tfN2(ton)+' ton', t:tfN2(R.depTrans)+' Bs/ton', m:R.depTrans*ton});
+    } else {
+      const esp = trat !== 'general';
+      const pct = esp ? R.logEsp : R.logGen;
+      let m = cifBs * pct / 100, t = tfN2(pct) + '% del CIF';
+      if(rk === 'fluvial'){
+        const bs = esp ? R.bsTonEsp : (parseFloat($('tf_fluv').value) || 0);
+        m += bs * ton; t = tfN2(bs) + ' Bs/ton + ' + t;
+      }
+      lines.push({c:'Servicio Logístico', d:TF_TRAT[trat], t:t, m:m});
+    }
+
+    // 2. Almacenaje
+    const quinc = dias > 5 ? Math.ceil((dias - 5) / 15) : 0;
+    const per15 = dias > 0 ? Math.ceil(dias / 15) : 0;
+    if(merc === 'general' || merc === 'peligrosa'){
+      const rate = merc === 'general' ? R.almGen : R.almPel;
+      const qty = R.byKg ? kg : ton;
+      lines.push({c:'Almacenaje — ' + TF_MERC[merc], d:quinc + ' quincena(s) de ' + tfN2(qty) + (R.byKg?' kg':' ton'), t:tfN2(rate) + (R.byKg?' Bs/kg':' Bs/ton') + ' por quincena', m:rate * qty * quinc});
+    } else if(merc === 'c20' || merc === 'c40'){
+      const tier = R[merc];
+      let unit;
+      if(dias === 0) unit = 0; else if(dias <= 15) unit = tier[0]; else if(dias <= 30) unit = tier[1]; else unit = tier[1] + tier[2] * (dias - 30);
+      lines.push({c:'Almacenaje — ' + TF_MERC[merc], d:cant + ' contenedor(es), ' + dias + ' días', t:'1-15 d: ' + tfN2(tier[0]) + ' · 16-30 d: ' + tfN2(tier[1]) + ' · +30 d: ' + tfN2(tier[2]) + ' Bs/día', m:unit * cant});
+    } else if(merc === 'graneles'){
+      lines.push({c:'Almacenaje — Gráneles', d:tfN2(ton) + ' ton × ' + dias + ' días', t:tfN2(R.gran) + ' Bs/ton/día', m:R.gran * ton * dias});
+    } else if(merc === 'vehiculos'){
+      const kgv = kg / cant;
+      const idx = kgv <= 500 ? 0 : kgv <= 800 ? 1 : kgv <= 1200 ? 2 : kgv <= 2500 ? 3 : 4;
+      lines.push({c:'Almacenaje — Vehículos', d:cant + ' vehículo(s) de ' + tfN2(kgv) + ' kg × ' + per15 + ' período(s) de 15 días', t:tfN2(R.veh[idx]) + ' Bs/vehículo por período', m:R.veh[idx] * cant * per15});
+    }
+
+    // 3. Seguro de almacenamiento
+    const per30 = dias > 0 ? Math.ceil(dias / 30) : 0;
+    if($('tf_poliza').checked){
+      lines.push({c:'Seguro de Almacenamiento', d:'Cliente presenta póliza', t:'No se cobra', m:0});
+    } else {
+      lines.push({c:'Seguro de Almacenamiento', d:per30 + ' período(s) de 30 días', t:tfN2(R.seg) + '% del CIF por período', m:cifBs * R.seg / 100 * per30});
+    }
+
+    const factor = caso === 'donacion' ? 0.64 : caso === 'nosujeta' ? 0 : 1;
+    let totalServ = 0;
+    lines.forEach(l=>{ l.m = roundCents(l.m * factor); totalServ += l.m; });
+    totalServ = roundCents(totalServ);
+
+    $('tf_title').textContent = 'Servicios — ' + R.label;
+    $('tf_lines').innerHTML = lines.map(l =>
+      '<tr><td>' + l.c + '<small>' + l.d + '</small></td><td>' + l.t + '</td><td class="num">' + tfBs(l.m) + '</td></tr>').join('');
+    $('tf_sum').innerHTML =
+      '<div class="r"><span>Total servicios del recinto</span><span>Bs ' + tfBs(totalServ) + '</span></div>' +
+      '<div class="r"><span>Total tributos aduaneros</span><span>Bs ' + tfBs(trib) + '</span></div>' +
+      '<div class="r big"><span>Total a pagar (tributos + servicios)</span><span>Bs ' + tfBs(trib + totalServ) + '</span></div>';
+
+    const notes = [];
+    if(modo === 'fechas' && incompleto) notes.push('<b>Faltan fechas:</b> completa la fecha de arribo (Parte de Recepción) y la fecha de aceptación de la DIM; mientras tanto la permanencia es 0 días y no se cobra almacenaje ni seguro.');
+    if(avisoFechas) notes.push('<b>' + avisoFechas + '</b>');
+    if(modo === 'fechas' && !incompleto && !avisoFechas) notes.push('Permanencia calculada con fechas: ' + dias + ' día(s).');
+    if(!hasData) notes.push('Todavía no hay un cálculo en la pestaña elegida: el CIF aparece en cero.');
+    if(factor === 0.64) notes.push('Se aplicó el 64% sobre todas las tarifas (mercancías de donación para entidades con exención tributaria).');
+    if(factor === 0) notes.push('Valijas diplomáticas y envío de socorro: no sujetas a cobro.');
+    if(caso === 'transbordo' || caso === 'deptrans') notes.push('En este caso el concesionario cobra además el almacenaje y el seguro según el tarifario.');
+    notes.push('Son tarifas máximas: el concesionario puede aplicar descuentos. Los plazos de almacenaje corren desde la recepción en el recinto.');
+    notes.push('Contenedores: se aplica el tramo según los días totales; pasados los 30 días se suma la tarifa por día de los días excedentes. Vehículos: tarifa por cada período de 15 días.');
+    if(rk === 'aeropuerto') notes.push('Aeropuerto: el tarifario indica 10,44 Bs/kg para mercancía peligrosa; verifica este valor con la versión oficial.');
+    if(rk === 'fluvial') notes.push('Fluvial: si la carga está a nombre de un desconsolidador, el plazo cuenta desde la fecha de desconsolidación.');
+    $('tf_notes').innerHTML = notes.map(n=>'<li>'+n+'</li>').join('');
+  }
+
+  const TF_REF = {
+    'Aduana de Interior': [
+      ['Servicio Logístico — tratamiento general','0,52% del CIF'],
+      ['Tratamiento especial (canal verde, Instituciones Públicas, OEA, PRIOS)','0,49% del CIF (si sale canal amarillo o rojo se aplica 0,52%)'],
+      ['Almacenaje mercancía general (1-5 días libre)','8,35 Bs/ton por quincena, desde el sexto día'],
+      ['Almacenaje mercancía peligrosa (1-5 días libre)','10,44 Bs/ton por quincena, desde el sexto día'],
+      ["Contenedor 20' (1-15 / 16-30 / +30 días)",'48,72 / 62,64 / 69,60 Bs (el tramo +30 es por día)'],
+      ["Contenedor 40' (1-15 / 16-30 / +30 días)",'90,48 / 118,32 / 139,20 Bs (el tramo +30 es por día)'],
+      ['Gráneles líquidos y sólidos','0,35 Bs/ton/día'],
+      ['Vehículos por 15 días (≤500 / ≤800 / ≤1.200 / ≤2.500 / >2.500 kg)','41,76 / 48,72 / 55,68 / 125,28 / 139,20 Bs'],
+      ['Control diferido','1-15 días libre; consignatario paga hasta 4 quincenas de almacenaje y 2 treintenas de seguro'],
+      ['Seguro de Almacenamiento','0,08% del CIF por cada 30 días (no se cobra con póliza presentada al ingreso)'],
+      ['Asistencia al Control de Tránsitos (exportación, reembarque)','83,52 Bs por factura comercial (por MIC/DTA si no hay factura)'],
+      ['Transbordo','27,84 Bs/ton (más almacenaje y seguro si ingresa a recinto)'],
+      ['Mercancía abandonada o decomisada','4,50% del monto de cada subasta (Ley 975 de 13/09/2017)'],
+      ['Mercancías de donación','64% de las tarifas, para entidades con exención tributaria'],
+      ['Régimen de Depósito Transitorio','32 Bs/ton (más almacenaje y seguro)'],
+      ['Régimen de Depósito Especial','Según tarifario aprobado por el Directorio de la Aduana Nacional'],
+      ['Valijas diplomáticas y envío de socorro','No sujeta a cobro'],
+      ['Material bélico (DS 3267)','UFV 200'],
+      ['Depósito por medidas coactivas (ejecución tributaria)','Mercancía general 3 Bs/ton/día; vehículos 5 Bs/día']
+    ],
+    'Aduana de Frontera': [
+      ['Servicio Logístico — tratamiento general','0,52% del CIF'],
+      ['Tratamiento especial (canal verde, Instituciones Públicas, OEA, PRIOS)','0,49% del CIF (si sale canal amarillo o rojo se aplica 0,52%)'],
+      ['Despachos anticipados de gráneles líquidos (YPFB)','520 Bs/cisterna'],
+      ['Almacenaje mercancía general (1-5 días libre)','12,53 Bs/ton por quincena, desde el sexto día'],
+      ['Almacenaje mercancía peligrosa (1-5 días libre)','13,92 Bs/ton por quincena, desde el sexto día'],
+      ["Contenedor 20' (1-15 / 16-30 / +30 días)",'55,68 / 69,60 / 76,56 Bs (el tramo +30 es por día)'],
+      ["Contenedor 40' (1-15 / 16-30 / +30 días)",'97,44 / 125,28 / 146,16 Bs (el tramo +30 es por día)'],
+      ['Gráneles líquidos y sólidos','0,42 Bs/ton/día'],
+      ['Vehículos por 15 días (≤500 / ≤800 / ≤1.200 / ≤2.500 / >2.500 kg)','48,72 / 55,68 / 62,64 / 132,24 / 146,16 Bs'],
+      ['Control diferido','1-15 días libre; consignatario paga hasta 4 quincenas de almacenaje y 2 treintenas de seguro'],
+      ['Seguro de Almacenamiento','0,08% del CIF por cada 30 días (no se cobra con póliza presentada al ingreso)'],
+      ['Asistencia al Control de Tránsitos','83,52 Bs por factura comercial (exportación); 83,52 Bs por documento (reexportación, reembarque, reexpedición)'],
+      ['Transbordo','27,84 Bs/ton (más almacenaje y seguro si ingresa a recinto)'],
+      ['Mercancía abandonada o decomisada','4,50% del monto de cada subasta (Ley 975 de 13/09/2017)'],
+      ['Mercancías de donación','64% de las tarifas, para entidades con exención tributaria'],
+      ['Régimen de Depósito Transitorio','32,00 Bs/ton (más almacenaje y seguro)'],
+      ['Régimen de Depósito Especial','Según tarifario aprobado por el Directorio de la Aduana Nacional'],
+      ['Valijas diplomáticas y envío de socorro','No sujeta a cobro'],
+      ['Material bélico (DS 3267)','UFV 200']
+    ],
+    'Aeropuerto': [
+      ['Servicio Logístico — tratamiento general','0,52% del CIF'],
+      ['Tratamiento especial (Instituciones Públicas, OEA, PRIOS)','0,49% del CIF'],
+      ['Almacenaje mercancía general (1-5 días libre)','0,63 Bs/kg por quincena, desde el sexto día'],
+      ['Almacenaje mercancía peligrosa (1-5 días libre)','10,44 Bs/kg por quincena, desde el sexto día (verificar con versión oficial)'],
+      ["Contenedor 20' (1-15 / 16-30 / +30 días)",'48,72 / 62,64 / 69,60 Bs (el tramo +30 es por día)'],
+      ['Control diferido','1-15 días libre; consignatario paga hasta 4 quincenas de almacenaje y 2 treintenas de seguro'],
+      ['Seguro de Almacenamiento','0,1% del CIF por cada 30 días (no se cobra con póliza presentada al ingreso)'],
+      ['Continuación de operaciones de tránsito aduanero — custodia a otros aeropuertos internacionales','0,42 Bs/kg'],
+      ['Continuación de operaciones de tránsito aduanero — seguro de mercancías en custodia','0,90 Bs/kg'],
+      ['Transbordo','27,84 Bs/ton (más almacenaje y seguro si ingresa a recinto)'],
+      ['Mercancía abandonada o decomisada','4,50% del monto de cada subasta (Ley 975 de 13/09/2017)'],
+      ['Mercancías de donación','64% de las tarifas, para entidades con exención tributaria'],
+      ['Régimen de Depósito Transitorio','32,00 Bs/ton (más almacenaje y seguro)'],
+      ['Régimen de Depósito Especial','Según tarifario aprobado por el Directorio de la Aduana Nacional'],
+      ['Valijas diplomáticas y envío de socorro','No sujeta a cobro'],
+      ['Material courier — Agencia Boliviana de Correos (AGBC)','No sujeta a cobro los primeros 2 días hábiles; luego se aplican las tarifas'],
+      ['Material AOG (aeronave en tierra)','No sujeta a cobro dentro de 1 día hábil; luego se aplican las tarifas'],
+      ['Material bélico (DS 3267)','UFV 200']
+    ],
+    'Puerto Fluvial': [
+      ['Servicio Logístico — tratamiento general','11 Bs/ton + 0,49% del CIF (verificar con versión oficial)'],
+      ['Tratamiento especial (canal verde, Instituciones Públicas, OEA, PRIOS)','1,00 Bs/ton + 0,49% del CIF (si sale canal amarillo o rojo se aplica la tarifa general)'],
+      ['Almacenaje mercancía general (1-5 días libre)','16,50 Bs/ton por quincena, desde el sexto día'],
+      ['Almacenaje mercancía peligrosa (1-5 días libre)','19,00 Bs/ton por quincena, desde el sexto día'],
+      ["Contenedor 20' (1-15 / 16-30 / +30 días)",'64 / 80 / 88 Bs (el tramo +30 es por día)'],
+      ["Contenedor 40' (1-15 / 16-30 / +30 días)",'112 / 145 / 169 Bs (el tramo +30 es por día)'],
+      ['Gráneles líquidos y sólidos','0,48 Bs/ton/día'],
+      ['Vehículos por 15 días (≤500 / ≤800 / ≤1.200 / ≤2.500 / >2.500 kg)','56 / 64 / 72 / 153 / 169 Bs'],
+      ['Control diferido','1-15 días libre; consignatario paga hasta 4 quincenas de almacenaje y 2 treintenas de seguro'],
+      ['Seguro de Almacenamiento','0,08% del CIF por cada 30 días (no se cobra con póliza presentada al ingreso)'],
+      ['Asistencia al Control de Tránsitos','96 Bs por factura comercial (exportación); 96 Bs por documento de embarque (reexportación, reembarque, reexpedición)'],
+      ['Transbordo','32,00 Bs/ton (más almacenaje y seguro si ingresa a recinto)'],
+      ['Mercancía abandonada o decomisada','4,50% del monto de cada subasta (Ley 975 de 13/09/2017)'],
+      ['Mercancías de donación','64% de las tarifas, para entidades con exención tributaria'],
+      ['Régimen de Depósito Transitorio','120,00 Bs/ton (más almacenaje y seguro)'],
+      ['Régimen de Depósito Especial','Según tarifario aprobado por el Directorio de la Aduana Nacional'],
+      ['Valijas diplomáticas y envío de socorro','No sujeta a cobro'],
+      ['Material bélico (DS 3267)','UFV 200'],
+      ['Servicio no regulado (también Interior y Frontera): custodia de medios de transporte comisados por contrabando','5,00 Bs/día por medio o unidad desde su ingreso, solo si se devuelve a su propietario']
+    ]
+  };
+  (function(){
+    let h = '<h2 class="section-title" style="margin-top:6px;">Tarifario completo (Circular 156/2022 · RD 01-042-22 de 27/07/2022)</h2>';
+    h += '<p style="font-size:12.5px;color:var(--slate);margin:0 0 14px;">Tarifas máximas en bolivianos. El concesionario puede hacer descuentos a los operadores de comercio exterior informando a la Aduana Nacional.</p>';
+    Object.keys(TF_REF).forEach(k=>{
+      h += '<details><summary>' + k + '</summary><table>' + TF_REF[k].map(r=>'<tr><td>'+r[0]+'</td><td>'+r[1]+'</td></tr>').join('') + '</table></details>';
+    });
+    $('tf_ref').innerHTML = h;
+  })();
+
+  $('tf_peso').addEventListener('input', (e)=>{ if(e.isTrusted) tfPesoTouched = true; });
+  document.addEventListener('input', tfCalc);
+  document.addEventListener('change', tfCalc);
+  document.querySelectorAll('.tab-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const tab = btn.dataset.tab;
+      if(tab === 'tarifario'){ $('tf_fuente').value = $('tf_fuente').value === 'manual' ? 'manual' : tfLastCalcTab; }
+      else tfLastCalcTab = tab;
+      tfCalc();
+    });
+  });
+  tfCalc();
 </script>
 <script>
   if ('serviceWorker' in navigator) {
